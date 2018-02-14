@@ -106,6 +106,7 @@ while (!Serial);  // required for Flora & Micro
 
   int i;
   int x=150;//this variable is here used generally to dictate long the base will move in a given direction
+  int d=1;
   
   void stop_motors(){
   digitalWrite(inAPin1, LOW); //stop motors can be both low or high
@@ -133,7 +134,7 @@ while (!Serial);  // required for Flora & Micro
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   }
   
@@ -152,7 +153,7 @@ while (!Serial);  // required for Flora & Micro
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   } 
 
@@ -172,7 +173,7 @@ void move_forward(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
   }
 }  
 
@@ -191,7 +192,7 @@ void move_forward(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   } 
   void move_right(int k){ 
@@ -209,7 +210,7 @@ void move_forward(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   } 
 void move_left(int k){
@@ -227,12 +228,12 @@ void move_left(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
   }
 }
 
 
-void move_diagonal_RF(int k){
+void move_NE(int k){
   digitalWrite(inAPin1, LOW); // move one direction RIGHT FORWARD DIAGONAL
   digitalWrite(inBPin1, LOW);
   digitalWrite(inAPin2, LOW);
@@ -247,11 +248,11 @@ void move_diagonal_RF(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   }
    
-void move_diagonal_LB(int k){
+void move_SW(int k){
   digitalWrite(inAPin1, LOW); // move one direction LEFT BACKWARD DIAGONAL
   digitalWrite(inBPin1, LOW);
   digitalWrite(inAPin2, HIGH);
@@ -266,12 +267,12 @@ void move_diagonal_LB(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   }
    
 
-void move_diagonal_LF(int k){
+void move_NW(int k){
   digitalWrite(inAPin1, LOW); // move one direction LEFT FORWARD DIAGONAL
   digitalWrite(inBPin1, HIGH);
   digitalWrite(inAPin2, LOW);
@@ -286,11 +287,11 @@ void move_diagonal_LF(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   }
 
-void move_diagonal_RB(int k){
+void move_SE(int k){
   digitalWrite(inAPin1, HIGH); // move one direction RIGHT BACKWARD DIAGONAL
   digitalWrite(inBPin1, LOW);
   digitalWrite(inAPin2, LOW);
@@ -305,7 +306,7 @@ void move_diagonal_RB(int k){
      analogWrite(PWMPin2, i);
      analogWrite(PWMPin3, i);
      analogWrite(PWMPin4, i);
-     delay(10);
+     delay(d);
     }
   }
 
@@ -364,26 +365,60 @@ void loop() {
   Serial.print(F("[Recv] ")); 
   Serial.println(ble.buffer);
 
-    if (*ble.buffer == 'n')
+    if (ble.buffer[0] == 'n')
     {
-      move_forward(150);
+      if (ble.buffer[1] == 'w')
+      {
+        move_NW(x);
+      }
+      else if (ble.buffer[1]=='e')
+      {
+        move_NE(x);
+      }
+      else
+      {
+        move_forward(x);
+      }
     }
-    else if (*ble.buffer == 'e')
+    else if (ble.buffer[0] == 'e')
     {
-      move_right(150);
+      move_right(x);
     }
-    else if (*ble.buffer == 's')
+    else if (ble.buffer[0] == 's')
     {
-      move_backward(150);
+      if (ble.buffer[1] == 'w')
+      {
+        move_SW(x);
+      }
+      else if (ble.buffer[1]=='e')
+      {
+        move_SE(x);
+      }
+      else
+      {
+        move_backward(x);
+      }    
     }
-    else if (*ble.buffer == 'w')
+    
+    else if (ble.buffer[0] == 'w')
     {
-      move_left(150);
+      move_left(x);
+    }
+
+    else if (ble.buffer[0] == 'c'){
+      if (ble.buffer[1] == 'c'){
+        rotate_counterclockwise(x);
+      }
+      else{
+        rotate_clockwise(x);
+      }     
     }
     else
     {
       stop_motors();
     }
+
+
 
   ble.waitForOK();
 }
