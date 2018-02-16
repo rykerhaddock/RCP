@@ -24,21 +24,21 @@ void error(const __FlashStringHelper*err) {
   while (1);
 }
 
-const int inAPin1 = 4;
-const int inBPin1 = 2;
-const int PWMPin1 = 3;
+const int inAPin1 = 22;
+const int inBPin1 = 23;
+const int PWMPin1 = 4;
 
-const int inAPin2 = 8;
-const int inBPin2 = 10;
-const int PWMPin2 = 9;
+const int inAPin2 = 26;
+const int inBPin2 = 27;
+const int PWMPin2 = 2;
 
-const int inAPin3 = 7;
-const int inBPin3 = 5;
-const int PWMPin3 = 6;
+const int inAPin3 = 24;
+const int inBPin3 = 25;
+const int PWMPin3 = 3;
 
-const int inAPin4 = 12;
-const int inBPin4 = 13;
-const int PWMPin4 = 11;
+const int inAPin4 = 8;
+const int inBPin4 = 9;
+const int PWMPin4 = 5;
 
 
 void setup() {
