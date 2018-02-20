@@ -4,6 +4,8 @@
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
+#include "VNH3SP30.h"
+
 
 #if SOFTWARE_SERIAL_AVAILABLE
   #include <SoftwareSerial.h>
@@ -40,28 +42,36 @@ const int inAPin4 = 8;
 const int inBPin4 = 9;
 const int PWMPin4 = 5;
 
+VNH3SP30 Motor1 (PWMPin1, inAPin1, inBPin1);
+VNH3SP30 Motor2 (PWMPin2, inAPin2, inBPin2);
+VNH3SP30 Motor3 (PWMPin3, inAPin3, inBPin3);
+VNH3SP30 Motor4 (PWMPin4, inAPin4, inBPin4);
 
 void setup() {
 
 /* Set up the Motor */
-  pinMode(inAPin1, OUTPUT);
-  pinMode(inBPin1, OUTPUT);
-  pinMode(PWMPin1, OUTPUT);
-  pinMode(inAPin2, OUTPUT);
-  pinMode(inBPin2, OUTPUT);
-  pinMode(PWMPin2, OUTPUT);
-  pinMode(inAPin3, OUTPUT);
-  pinMode(inBPin3, OUTPUT);
-  pinMode(PWMPin3, OUTPUT);
-  pinMode(inAPin4, OUTPUT);
-  pinMode(inBPin4, OUTPUT);
-  pinMode(PWMPin4, OUTPUT);
+//  pinMode(inAPin1, OUTPUT);
+//  pinMode(inBPin1, OUTPUT);
+//  pinMode(PWMPin1, OUTPUT);
+//  pinMode(inAPin2, OUTPUT);
+//  pinMode(inBPin2, OUTPUT);
+//  pinMode(PWMPin2, OUTPUT);
+//  pinMode(inAPin3, OUTPUT);
+//  pinMode(inBPin3, OUTPUT);
+//  pinMode(PWMPin3, OUTPUT);
+//  pinMode(inAPin4, OUTPUT);
+//  pinMode(inBPin4, OUTPUT);
+//  pinMode(PWMPin4, OUTPUT);
 
 /* Set up the Bluetooth */
 while (!Serial);  // required for Flora & Micro
   delay(500);
 
   Serial.begin(115200);
+  Motor1.Stop();
+  Motor2.Stop();
+  Motor3.Stop();
+  Motor4.Stop();
   Serial.println(F("RCP Robotic Base Control"));
   Serial.println(F("---------------------------------------"));
 
@@ -109,207 +119,80 @@ while (!Serial);  // required for Flora & Micro
   int d=1;
   
   void stop_motors(){
-  digitalWrite(inAPin1, LOW); //stop motors can be both low or high
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, LOW);
+  Motor1.Stop();
+  Motor2.Stop();
+  Motor3.Stop();
+  Motor4.Stop();
   }
 
   void rotate_clockwise(int k){
-  digitalWrite(inAPin1, HIGH); // move one direction, ROTATES CLOCKWISE
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, HIGH);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, HIGH);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, HIGH);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Move(k,HIGH);
+  Motor2.Move(k,HIGH);
+  Motor3.Move(k,HIGH);
+  Motor4.Move(k,HIGH);
   }
   
   void rotate_counterclockwise(int k){
-  digitalWrite(inBPin1, HIGH); // move other direction, ROTATES COUNTERCLOCKWISE
-  digitalWrite(inAPin1, LOW);
-  digitalWrite(inBPin2, HIGH);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin3, HIGH);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin4, HIGH);
-  digitalWrite(inAPin4, LOW);
-  
-  for (i = 0; i < k; i++){
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Move(k,LOW);
+  Motor2.Move(k,LOW);
+  Motor3.Move(k,LOW);
+  Motor4.Move(k,LOW);
   } 
 
 
 void move_forward(int k){
-  digitalWrite(inAPin1, LOW); // move one direction FORWARD
-  digitalWrite(inBPin1, HIGH);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, HIGH);
-  digitalWrite(inAPin3, HIGH);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, HIGH);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-  }
+  Motor1.Move(k,HIGH);
+  Motor2.Move(k,HIGH);
+  Motor3.Move(k,LOW);
+  Motor4.Move(k,LOW);
 }  
 
   void move_backward(int k){
-  digitalWrite(inAPin1, HIGH); // move one direction BACKWARDS
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, HIGH);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, HIGH);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, HIGH);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Move(k,LOW);
+  Motor2.Move(k,LOW);
+  Motor3.Move(k,HIGH);
+  Motor4.Move(k,HIGH);
   } 
   void move_right(int k){ 
-  digitalWrite(inAPin1, HIGH); // move one direction RIGHT
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, HIGH);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, HIGH);
-  digitalWrite(inAPin4, HIGH);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Move(k,HIGH);
+  Motor2.Move(k,LOW);
+  Motor3.Move(k,LOW);
+  Motor4.Move(k,HIGH);
   } 
 void move_left(int k){
-  digitalWrite(inAPin1, LOW); // move one direction LEFT
-  digitalWrite(inBPin1, HIGH);
-  digitalWrite(inAPin2, HIGH);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, HIGH);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, HIGH);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-  }
+  Motor1.Move(k,LOW);
+  Motor2.Move(k,HIGH);
+  Motor3.Move(k,HIGH);
+  Motor4.Move(k,LOW);
 }
 
-
-void move_NE(int k){
-  digitalWrite(inAPin1, LOW); // move one direction RIGHT FORWARD DIAGONAL
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, HIGH);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, HIGH);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
-  }
-   
-void move_SW(int k){
-  digitalWrite(inAPin1, LOW); // move one direction LEFT BACKWARD DIAGONAL
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, HIGH);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, HIGH);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
-  }
-   
-
 void move_NW(int k){
-  digitalWrite(inAPin1, LOW); // move one direction LEFT FORWARD DIAGONAL
-  digitalWrite(inBPin1, HIGH);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, HIGH);
-  digitalWrite(inBPin3, LOW);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Stop();
+  Motor2.Move(k,HIGH);
+  Motor3.Stop();
+  Motor4.Move(k,LOW);
   }
-
+   
 void move_SE(int k){
-  digitalWrite(inAPin1, HIGH); // move one direction RIGHT BACKWARD DIAGONAL
-  digitalWrite(inBPin1, LOW);
-  digitalWrite(inAPin2, LOW);
-  digitalWrite(inBPin2, LOW);
-  digitalWrite(inAPin3, LOW);
-  digitalWrite(inBPin3, HIGH);
-  digitalWrite(inAPin4, LOW);
-  digitalWrite(inBPin4, LOW);
-  
-  for (i = 0; i < k; i++){ 
-     analogWrite(PWMPin1, i);
-     analogWrite(PWMPin2, i);
-     analogWrite(PWMPin3, i);
-     analogWrite(PWMPin4, i);
-     delay(d);
-    }
+  Motor1.Stop();
+  Motor2.Move(k,LOW);
+  Motor3.Stop();
+  Motor4.Move(k,HIGH);
+  }
+   
+void move_NE(int k){
+  Motor1.Move(k,HIGH);
+  Motor2.Stop();
+  Motor3.Move(k,LOW);  
+  Motor4.Stop();
   }
 
+void move_SW(int k){
+  Motor1.Move(k,LOW);
+  Motor2.Stop();
+  Motor3.Move(k,HIGH);  
+  Motor4.Stop();
+  }
 
 
 void loop() {
