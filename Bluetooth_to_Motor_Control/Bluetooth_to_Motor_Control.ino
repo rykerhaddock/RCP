@@ -208,28 +208,6 @@ void loop() {
 
     ble.print("AT+BLEUARTTX=");
     ble.println(inputs);
-
-// Enables Control From the Laptop
-//    if (*inputs == 'n')
-//    {
-//      move_forward(150);
-//    }
-//    else if (*inputs == 'e')
-//    {
-//      move_right(150);
-//    }
-//    else if (*inputs == 's')
-//    {
-//      move_backward(150);
-//    }
-//    else if (*inputs == 'w')
-//    {
-//      move_left(150);
-//    }
-//    else
-//    {
-//      stop_motors();
-//    }
   
     // check response status
     if (! ble.waitForOK() ) {
@@ -248,13 +226,30 @@ void loop() {
   Serial.print(F("[Recv] ")); 
   Serial.println(ble.buffer);
 
-    if (ble.buffer[0] == 'n')
+    if (ble.buffer[0] == '1')
     {
-      if (ble.buffer[1] == 'w')
+      x=50;
+    }
+    else if (ble.buffer[0] == '2')
+    {
+      x = 125;
+    }
+    else if (ble.buffer[0] == '3')
+    {
+      x = 255;
+    }
+    else
+    {
+      x = 0;
+    }
+
+    if (ble.buffer[1] == 'n')
+    {
+      if (ble.buffer[2] == 'w')
       {
         move_NW(x);
       }
-      else if (ble.buffer[1]=='e')
+      else if (ble.buffer[2]=='e')
       {
         move_NE(x);
       }
@@ -263,17 +258,17 @@ void loop() {
         move_forward(x);
       }
     }
-    else if (ble.buffer[0] == 'e')
+    else if (ble.buffer[1] == 'e')
     {
       move_right(x);
     }
-    else if (ble.buffer[0] == 's')
+    else if (ble.buffer[1] == 's')
     {
-      if (ble.buffer[1] == 'w')
+      if (ble.buffer[2] == 'w')
       {
         move_SW(x);
       }
-      else if (ble.buffer[1]=='e')
+      else if (ble.buffer[2]=='e')
       {
         move_SE(x);
       }
@@ -283,13 +278,13 @@ void loop() {
       }    
     }
     
-    else if (ble.buffer[0] == 'w')
+    else if (ble.buffer[1] == 'w')
     {
       move_left(x);
     }
 
-    else if (ble.buffer[0] == 'c'){
-      if (ble.buffer[1] == 'c'){
+    else if (ble.buffer[1] == 'c'){
+      if (ble.buffer[2] == 'c'){
         rotate_counterclockwise(x);
       }
       else{
