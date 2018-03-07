@@ -5,6 +5,11 @@
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
 #include "VNH3SP30.h"
+#include <Servo.h>
+///////////
+#include <string.h>
+/////////////
+
 
 
 #if SOFTWARE_SERIAL_AVAILABLE
@@ -14,6 +19,9 @@
 /*=========================================================================*/
     #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
     #define MODE_LED_BEHAVIOUR          "MODE"
+    ////////////////////////////////////////////////
+    #define BLE_READPACKET_TIMEOUT         500 
+    /////////////////////////////////////////////////
 /*=========================================================================*/
 
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -25,6 +33,16 @@ void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
+
+///////////////////////////////////////////////////////////////
+// function prototypes over in packetparser.cpp
+uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
+float parsefloat(uint8_t *buffer);
+void printHex(const uint8_t * data, const uint32_t numBytes);
+
+// the packet buffer
+extern uint8_t packetbuffer[];
+//////////////////////////////////////////////////////////////////
 
 const int inAPin1 = 22;
 const int inBPin1 = 23;
@@ -47,6 +65,8 @@ VNH3SP30 Motor2 (PWMPin2, inAPin2, inBPin2);
 VNH3SP30 Motor3 (PWMPin3, inAPin3, inBPin3);
 VNH3SP30 Motor4 (PWMPin4, inAPin4, inBPin4);
 
+Servo myservo;
+
 void setup() {
 
 /* Set up the Motor */
@@ -62,6 +82,11 @@ void setup() {
 //  pinMode(inAPin4, OUTPUT);
 //  pinMode(inBPin4, OUTPUT);
 //  pinMode(PWMPin4, OUTPUT);
+
+pinMode(52, OUTPUT);
+digitalWrite(52, HIGH);
+myservo.attach(13);
+myservo.write(0);
 
 /* Set up the Bluetooth */
 while (!Serial);  // required for Flora & Micro
@@ -113,7 +138,7 @@ while (!Serial);  // required for Flora & Micro
   }
 }
 
-
+  
   int i;
   int x=150;//this variable is here used generally to dictate long the base will move in a given direction
   int d=1;
@@ -196,7 +221,9 @@ void move_SW(int k){
 
 
 void loop() {
+/////////////////////////////////////////////////////////////////
 
+  
 // Check for user input
   char inputs[BUFSIZE+1];
 
@@ -226,7 +253,17 @@ void loop() {
   Serial.print(F("[Recv] ")); 
   Serial.println(ble.buffer);
 
-    if (ble.buffer[0] == '1')
+    if (ble.buffer[0] == 'x')
+    {
+      stop_motors();
+      delay(250);
+      myservo.write(155);
+      delay(500);
+      myservo.write(0);
+      delay(500); 
+    }  
+
+    else if (ble.buffer[0] == '1')
     {
       x=50;
     }
@@ -296,9 +333,43 @@ void loop() {
       stop_motors();
     }
 
-
-
   ble.waitForOK();
+  ///////////////////////////////
+
+ uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+  if (len == 0) return;
+
+
+  if (packetbuffer[1] == 'B') {
+    uint8_t buttnum = packetbuffer[2] - '0';
+    boolean pressed = packetbuffer[3] - '0';
+    
+    if (pressed) {
+      if(buttnum==5 ||buttnum=='5'){
+        move_forward(200);
+      }
+      else if(buttnum==6||buttnum=='6'){
+        move_backward(200);
+      }
+      else if(buttnum==7||buttnum=='7'){
+        move_left(200);
+      }
+      else if(buttnum==8||buttnum=='8'){
+        move_right(200);
+      }
+      else{
+        stop_motors();
+      }
+           
+    }  
+    else {
+      stop_motors();
+    }
+  
+  }
+  
+//////////////////////////////////////////////
+  
 }
 
 bool getUserInput(char buffer[], uint8_t maxSize)
