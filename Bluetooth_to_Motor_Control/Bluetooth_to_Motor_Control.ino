@@ -265,7 +265,7 @@ void loop() {
 
     else if (ble.buffer[0] == '1')
     {
-      x=50;
+      x=75;
     }
     else if (ble.buffer[0] == '2')
     {
