@@ -66,27 +66,14 @@ VNH3SP30 Motor3 (PWMPin3, inAPin3, inBPin3);
 VNH3SP30 Motor4 (PWMPin4, inAPin4, inBPin4);
 
 Servo myservo;
-
+///////////////////////////////////////SETUP///////////////////////////////////////////////////////
 void setup() {
-
-/* Set up the Motor */
-//  pinMode(inAPin1, OUTPUT);
-//  pinMode(inBPin1, OUTPUT);
-//  pinMode(PWMPin1, OUTPUT);
-//  pinMode(inAPin2, OUTPUT);
-//  pinMode(inBPin2, OUTPUT);
-//  pinMode(PWMPin2, OUTPUT);
-//  pinMode(inAPin3, OUTPUT);
-//  pinMode(inBPin3, OUTPUT);
-//  pinMode(PWMPin3, OUTPUT);
-//  pinMode(inAPin4, OUTPUT);
-//  pinMode(inBPin4, OUTPUT);
-//  pinMode(PWMPin4, OUTPUT);
-
 pinMode(52, OUTPUT);
 digitalWrite(52, HIGH);
 myservo.attach(13);
 myservo.write(0);
+
+ 
 
 /* Set up the Bluetooth */
 while (!Serial);  // required for Flora & Micro
@@ -137,11 +124,33 @@ while (!Serial);  // required for Flora & Micro
     Serial.println(F("******************************"));
   }
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+int state = 0;
+int i = 0;
+int j = 0;
+float errN = 300.0;
+float errE = 300.0;
+float rot_speed1 = 360/12.5; // deg/s (360 deg in 12.5 s)
+float rot_speed2 = 360/7.5; // deg/s (360 deg in 7.5 s)
+float rot_speed3 = 360/5.5; // deg/s (360 deg in 5.5 s)
+float trans_speed1N = 10/19.3; // ft/s (10 feet in 19.3 s)
+float trans_speed2N = 10/12.1; // ft/s (10 feet in 12.1 s)
+float trans_speed3N = 10/9.0; // ft/s (10 feet in 9.0 s)
+float trans_speed1E = 10/31.0; // ft/s (10 feet in 31.0 s)
+float trans_speed2E = 10/15.0; // ft/s (10 feet in 15.0 s)
+float trans_speed3E = 10/10.0; // ft/s (10 feet in 10.0 s)
+float errN_last;
+float errE_last;
+float direct_last;
+float time_trans;
+
 
   
-  int i;
+//  int i;
   int x=150;//this variable is here used generally to dictate long the base will move in a given direction
-  int d=1;
+//  int d=1;
   
   void stop_motors(){
   Motor1.Stop();
@@ -165,26 +174,26 @@ while (!Serial);  // required for Flora & Micro
   } 
 
 
-void move_forward(int k){
+void move_N(int k){
   Motor1.Move(k,HIGH);
   Motor2.Move(k,HIGH);
   Motor3.Move(k,LOW);
   Motor4.Move(k,LOW);
 }  
 
-  void move_backward(int k){
+  void move_S(int k){
   Motor1.Move(k,LOW);
   Motor2.Move(k,LOW);
   Motor3.Move(k,HIGH);
   Motor4.Move(k,HIGH);
   } 
-  void move_right(int k){ 
+  void move_E(int k){ 
   Motor1.Move(k,HIGH);
   Motor2.Move(k,LOW);
   Motor3.Move(k,LOW);
   Motor4.Move(k,HIGH);
   } 
-void move_left(int k){
+void move_W(int k){
   Motor1.Move(k,LOW);
   Motor2.Move(k,HIGH);
   Motor3.Move(k,HIGH);
@@ -219,28 +228,8 @@ void move_SW(int k){
   Motor4.Stop();
   }
 
-
+/////////////////////////////////////////////////////////////LOOP////////////////////////////////////////////////////////////////
 void loop() {
-/////////////////////////////////////////////////////////////////
-
-  
-// Check for user input
-  char inputs[BUFSIZE+1];
-
-  if ( getUserInput(inputs, BUFSIZE) )
-  {
-    // Send characters to Bluefruit
-    Serial.print("[Send] ");
-    Serial.println(inputs);
-
-    ble.print("AT+BLEUARTTX=");
-    ble.println(inputs);
-  
-    // check response status
-    if (! ble.waitForOK() ) {
-      Serial.println(F("Failed to send?"));
-    }
-  }
 
   // Check for incoming characters from Bluefruit
   ble.println("AT+BLEUARTRX");
@@ -250,91 +239,115 @@ void loop() {
     return;
   }
   // Some data was found, its in the buffer
-  Serial.print(F("[Recv] ")); 
+  Serial.print(F("[Recv] "));
   Serial.println(ble.buffer);
-
-    if (ble.buffer[0] == 'x')
-    {
-      stop_motors();
-      delay(250);
-      myservo.write(155);
-      delay(500);
-      myservo.write(0);
-      delay(500); 
-    }  
-
-    else if (ble.buffer[0] == '1')
-    {
-      x=75;
-    }
-    else if (ble.buffer[0] == '2')
-    {
-      x = 125;
-    }
-    else if (ble.buffer[0] == '3')
-    {
-      x = 255;
-    }
-    else
-    {
-      x = 0;
-    }
-
-    if (ble.buffer[1] == 'n')
-    {
-      if (ble.buffer[2] == 'w')
-      {
-        move_NW(x);
-      }
-      else if (ble.buffer[2]=='e')
-      {
-        move_NE(x);
-      }
-      else
-      {
-        move_forward(x);
-      }
-    }
-    else if (ble.buffer[1] == 'e')
-    {
-      move_right(x);
-    }
-    else if (ble.buffer[1] == 's')
-    {
-      if (ble.buffer[2] == 'w')
-      {
-        move_SW(x);
-      }
-      else if (ble.buffer[2]=='e')
-      {
-        move_SE(x);
-      }
-      else
-      {
-        move_backward(x);
-      }    
-    }
-    
-    else if (ble.buffer[1] == 'w')
-    {
-      move_left(x);
-    }
-
-    else if (ble.buffer[1] == 'c'){
-      if (ble.buffer[2] == 'c'){
-        rotate_counterclockwise(x);
-      }
-      else{
-        rotate_clockwise(x);
-      }     
-    }
-    else
-    {
-      stop_motors();
-    }
-
   ble.waitForOK();
-  ///////////////////////////////
+
+  if (errN == 300.0)
+  {
+    errN = atof(ble.buffer);
+    Serial.println(fabs(errN));
+  }
+  else if (errE == 300.0)
+  {
+    errE = atof(ble.buffer);
+    Serial.println(errE);
+}
+// if (i == 0)
+// {
+//    errN_last = errN;
+//    errE_last = errE;
+//    direct_last = 0;
+//    i = 1;
+// }
+
+if (errN!=300.0 && errE!=300.0)
+{
+  if (fabs(errN) < .01)
+  {
+    state = 1;
+    if (fabs(errE) < .01)
+    {
+        state = 2;
+    }
+  }
+  else
+  {
+    state = 0;
+  }
+switch (state){
+  case 0:
+    if (fabs(errN)>1)
+    {
+      x = 255;    //FAST
+      time_trans = fabs(errN)/trans_speed3N;
+    }
+    else if (fabs(errN >.5))
+    {
+      x = 125;    //MEDIUM
+      time_trans = fabs(errN)/trans_speed2N;
+    }
+    else
+    {
+      x = 55;     //SLOW
+      time_trans = fabs(errN)/trans_speed1N;
+    }
+    if (errN<0)
+    {
+      move_S(x);
+    }
+    else
+    {
+      move_N(x);
+    }
+    delay(time_trans*1000);
+    stop_motors();
+  break;
+  case 1:
+    if (fabs(errE)>1)
+    {
+      x = 255;    //FAST
+      time_trans = fabs(errE)/trans_speed3E;
+    }
+    else if (fabs(errE >.5))
+    {
+      x = 125;    //MEDIUM
+      time_trans = fabs(errE)/trans_speed2E;
+    }
+    else
+    {
+      x = 55;     //SLOW
+      time_trans = fabs(errE)/trans_speed1E;
+    }
+    if (errE<0)
+    {
+      move_W(x);
+    }
+    else
+    {
+      move_E(x);
+    }
+    delay(time_trans*1000);
+    stop_motors();
+  break;
+  case 3:
+    stop_motors();
+    delay(250);
+    myservo.write(155);
+    delay(500);
+    myservo.write(0);
+    delay(500);
+  break;
+  default:
+  break;
+}
+
+errN = 300.0;
+errE = 300.0;
+
+
+}
+
 
  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
   if (len == 0) return;
@@ -346,16 +359,16 @@ void loop() {
     
     if (pressed) {
       if(buttnum==5 ||buttnum=='5'){
-        move_forward(200);
+        move_N(200);
       }
       else if(buttnum==6||buttnum=='6'){
-        move_backward(200);
+        move_S(200);
       }
       else if(buttnum==7||buttnum=='7'){
-        move_left(200);
+        move_W(200);
       }
       else if(buttnum==8||buttnum=='8'){
-        move_right(200);
+        move_E(200);
       }
       else{
         stop_motors();
@@ -365,16 +378,16 @@ void loop() {
     else {
       stop_motors();
     }
-  
   }
-  
-//////////////////////////////////////////////
-  
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 bool getUserInput(char buffer[], uint8_t maxSize)
 {
   // timeout in 100 milliseconds
+
+  
   TimeoutTimer timeout(100);
 
   memset(buffer, 0, maxSize);
@@ -392,3 +405,4 @@ bool getUserInput(char buffer[], uint8_t maxSize)
 
   return true;
 }
+

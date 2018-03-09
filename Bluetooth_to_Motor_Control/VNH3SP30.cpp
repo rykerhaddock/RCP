@@ -43,3 +43,4 @@ void VNH3SP30::SetPWMA(byte Value) {
 	analogWrite(PWMPIN, Value);
   
 }
+
