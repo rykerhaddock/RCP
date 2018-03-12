@@ -141,9 +141,9 @@ float trans_speed3N = 10/9.0; // ft/s (10 feet in 9.0 s)
 float trans_speed1E = 10/31.0; // ft/s (10 feet in 31.0 s)
 float trans_speed2E = 10/15.0; // ft/s (10 feet in 15.0 s)
 float trans_speed3E = 10/10.0; // ft/s (10 feet in 10.0 s)
-float errN_last;
-float errE_last;
-float direct_last;
+//float errN_last;
+//float errE_last;
+//float direct_last;
 float time_trans;
 
 
@@ -253,27 +253,20 @@ void loop() {
     errE = atof(ble.buffer);
     Serial.println(errE);
 }
-// if (i == 0)
-// {
-//    errN_last = errN;
-//    errE_last = errE;
-//    direct_last = 0;
-//    i = 1;
-// }
 
 if (errN!=300.0 && errE!=300.0)
 {
-  if (fabs(errN) < .01)
+  if (fabs(errN) < .01 && fabs(errE) < .01)
   {
-    state = 1;
-    if (fabs(errE) < .01)
-    {
-        state = 2;
-    }
+    state = 2;
+  }
+  else if (fabs(errN) > fabs(errE))
+  {
+    state = 0;
   }
   else
   {
-    state = 0;
+    state = 1;
   }
 switch (state){
   case 0:
