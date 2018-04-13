@@ -14,6 +14,7 @@ void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
+// Establish Bluetooth communication pins
 const int Rx_b = 19;
 const int Tx_b = 18;
 
@@ -44,15 +45,13 @@ while (!Serial);  // required for Flora & Micro
   Serial1.begin(9600);
   stop_motors();
   Serial.println(F("RCP Robotic Base Control"));
-  Serial.println(F("---------------------------------------"));
   // reserve 200 bytes for the inputString
   inputString.reserve(200);
 }
 ////////////////////////////////////////////////////////////////
-  
-  int i;
-  int x=150;//this variable is here used generally to dictate long the base will move in a given direction
-  int d=1;
+
+  //Initialize variables
+  int motor_speed=150;
   int n = 0;
   int k = 0;
   
@@ -82,106 +81,92 @@ void command_motors(String inputString1){
   k = 0;
     if (inputString1[0] == 'x')
     {
-     motor();
+     stamp();
      delay(3000);
     }  
-    else if (inputString1[0]=='d')
-    {
-      if (inputString1[1] == '1')
-        {
+    else if (inputString1[0]=='d'){
+      if (inputString1[1] == '1'){
           demo1();
         }
-        else if (inputString1[1] == '2')
-        {
+        else if (inputString1[1] == '2'){
           demo2();
         }
     }
 
-    else if (inputString1[0] == '1')
-    {
-      x=75;
+    else if (inputString1[0] == '1'){
+      motor_speed=75;
     }
-    else if (inputString1[0] == '2')
-    {
-      x = 75;
+    else if (inputString1[0] == '2'){
+      motor_speed = 75;
     }
-    else if (inputString1[0] == '3')
-    {
-      x = 255;
+    else if (inputString1[0] == '3'){
+      motor_speed = 255;
     }
-    else
-    {
-      x = 0;
+    else{
+      motor_speed = 0;
     }
 
-    if (inputString1[1] == 'n')
-    {
-      if (inputString1[2] == 'w')
-      {
-        move_NW(x);
+    if (inputString1[1] == 'n'){
+      if (inputString1[2] == 'w'){
+        move_NW(motor_speed);
       }
-      else if (inputString1[2]=='e')
-      {
-        move_NE(x);
+      else if (inputString1[2]=='e'){
+        move_NE(motor_speed);
       }
-      else
-      {
-        move_N(x);
+      else{
+        move_N(motor_speed);
       }
     }
-    else if (inputString1[1] == 'e')
-    {
-      move_E(x);
+    else if (inputString1[1] == 'e'){
+      move_E(motor_speed);
     }
-    else if (inputString1[1] == 's')
-    {
-      if (inputString1[2] == 'w')
-      {
-        move_SW(x);
+    else if (inputString1[1] == 's'){
+      if (inputString1[2] == 'w'){
+        move_SW(motor_speed);
       }
-      else if (inputString1[2]=='e')
-      {
-        move_SE(x);
+      else if (inputString1[2]=='e'){
+        move_SE(motor_speed);
       }
-      else
-      {
-        move_S(x);
+      else{
+        move_S(motor_speed);
       }    
     }
     
-    else if (inputString1[1] == 'w')
-    {
-      move_W(x);
+    else if (inputString1[1] == 'w'){
+      move_W(motor_speed);
     }
 
     else if (inputString1[1] == 'c'){
       if (inputString1[2] == 'c'){
-        rotate_counterclockwise(x);
+        rotate_counterclockwise(motor_speed);
       }
       else{
-        rotate_clockwise(x);
+        rotate_clockwise(motor_speed);
       }     
     }
-    else
-    {
+    else{
       stop_motors();
     }
-    if (inputString1[0] == '1')
-    {
+    if (inputString1[0] == '1'){
       delay(75);
       stop_motors();
       delay(1000);
     }
+    else if (inputString1[0] == '2'){
+      delay(400);
+      stop_motors();
+      delay(750);
+    }
 }
 
-void motor()
-{
+void stamp(){
   /* Servo Motor commanded to fully extend
    * While extending the deriviative of the voltage through the motor is measured
    * The voltage measuremtns are averaged to make a smoother curve
    * The voltage spikes when an ostacle is hit
    * When the voltage spikes the motor stops moving
    */
+  stop_motors();
   base.write(180); //motor commanded to fully extend 
   float average = 0;//initialize current average voltage value
   float aver_prev = 350; //initialize previous value used to find dervitive
@@ -235,6 +220,3 @@ void serialEvent1() {
     }
   }
 }
-
-
-
