@@ -3,6 +3,7 @@
 #include <Servo.h>
 #include <string.h>
 #include <SoftwareSerial.h>
+#include "motor_commands.h"
 
 /*=========================================================================*/
     #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
@@ -13,32 +14,16 @@ void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
-
-const int inAPin1 = 22;
-const int inBPin1 = 23;
-const int PWMPin1 = 4;
-
-const int inAPin2 = 26;
-const int inBPin2 = 27;
-const int PWMPin2 = 2;
-
-const int inAPin3 = 24;
-const int inBPin3 = 25;
-const int PWMPin3 = 3;
-
-const int inAPin4 = 8;
-const int inBPin4 = 9;
-const int PWMPin4 = 5;
-
 const int Rx_b = 19;
 const int Tx_b = 18;
 
-VNH3SP30 Motor1 (PWMPin1, inAPin1, inBPin1);
-VNH3SP30 Motor2 (PWMPin2, inAPin2, inBPin2);
-VNH3SP30 Motor3 (PWMPin3, inAPin3, inBPin3);
-VNH3SP30 Motor4 (PWMPin4, inAPin4, inBPin4);
+//for servo control
+Servo base;
+int analogPin = 3;
+float volt = 0.0;
+float resist = 33;
+float cur = 0;
 
-Servo myservo;
 String inputString = "";
 boolean inputStringReceived = false;
 
@@ -48,8 +33,8 @@ pinMode(Rx_b, INPUT);
 digitalWrite(Rx_b, HIGH);
 pinMode(52, OUTPUT);
 digitalWrite(52, HIGH);
-myservo.attach(13);
-myservo.write(0);
+base.attach(6);
+base.write(0);
 
 /* Set up the Bluetooth */
 while (!Serial);  // required for Flora & Micro
@@ -57,10 +42,7 @@ while (!Serial);  // required for Flora & Micro
 
   Serial.begin(9600);
   Serial1.begin(9600);
-  Motor1.Stop();
-  Motor2.Stop();
-  Motor3.Stop();
-  Motor4.Stop();
+  stop_motors();
   Serial.println(F("RCP Robotic Base Control"));
   Serial.println(F("---------------------------------------"));
   // reserve 200 bytes for the inputString
@@ -71,104 +53,49 @@ while (!Serial);  // required for Flora & Micro
   int i;
   int x=150;//this variable is here used generally to dictate long the base will move in a given direction
   int d=1;
+  int n = 0;
+  int k = 0;
   
-  void stop_motors(){
-  Motor1.Stop();
-  Motor2.Stop();
-  Motor3.Stop();
-  Motor4.Stop();
-  }
-
-  void rotate_clockwise(int k){
-  Motor1.Move(k,HIGH);
-  Motor2.Move(k,HIGH);
-  Motor3.Move(k,HIGH);
-  Motor4.Move(k,HIGH);
-  }
-  
-  void rotate_counterclockwise(int k){
-  Motor1.Move(k,LOW);
-  Motor2.Move(k,LOW);
-  Motor3.Move(k,LOW);
-  Motor4.Move(k,LOW);
-  } 
-
-void move_forward(int k){
-  Motor1.Move(k,HIGH);
-  Motor2.Move(k,HIGH);
-  Motor3.Move(k,LOW);
-  Motor4.Move(k,LOW);
-}  
-
-  void move_backward(int k){
-  Motor1.Move(k,LOW);
-  Motor2.Move(k,LOW);
-  Motor3.Move(k,HIGH);
-  Motor4.Move(k,HIGH);
-  } 
-  void move_right(int k){ 
-  Motor1.Move(k,HIGH);
-  Motor2.Move(k,LOW);
-  Motor3.Move(k,LOW);
-  Motor4.Move(k,HIGH);
-  } 
-void move_left(int k){
-  Motor1.Move(k,LOW);
-  Motor2.Move(k,HIGH);
-  Motor3.Move(k,HIGH);
-  Motor4.Move(k,LOW);
-}
-
-void move_NW(int k){
-  Motor1.Stop();
-  Motor2.Move(k,HIGH);
-  Motor3.Stop();
-  Motor4.Move(k,LOW);
-  }
-   
-void move_SE(int k){
-  Motor1.Stop();
-  Motor2.Move(k,LOW);
-  Motor3.Stop();
-  Motor4.Move(k,HIGH);
-  }
-   
-void move_NE(int k){
-  Motor1.Move(k,HIGH);
-  Motor2.Stop();
-  Motor3.Move(k,LOW);  
-  Motor4.Stop();
-  }
-
-void move_SW(int k){
-  Motor1.Move(k,LOW);
-  Motor2.Stop();
-  Motor3.Move(k,HIGH);  
-  Motor4.Stop();
-  }
-
 void loop() {
   if (inputStringReceived){
-    Serial.println(inputString);
     command_motors(inputString);
     inputString="";
     inputStringReceived = false;    
   }
+
+  if (n>10000){
+    if (k<50){
+        k = k+1;
+        n = 0;
+      }
+      else{
+        stop_motors();
+      }
+  }
+    n = n+1;
 }
 
 void command_motors(String inputString1){
   // Some data was found, its in the Serial.buffer
   Serial.println(inputString1);
-
+  n = 0;
+  k = 0;
     if (inputString1[0] == 'x')
     {
-      stop_motors();
-      delay(250);
-      myservo.write(155);
-      delay(500);
-      myservo.write(0);
-      delay(500); 
+     motor();
+     delay(3000);
     }  
+    else if (inputString1[0]=='d')
+    {
+      if (inputString1[1] == '1')
+        {
+          demo1();
+        }
+        else if (inputString1[1] == '2')
+        {
+          demo2();
+        }
+    }
 
     else if (inputString1[0] == '1')
     {
@@ -176,7 +103,7 @@ void command_motors(String inputString1){
     }
     else if (inputString1[0] == '2')
     {
-      x = 125;
+      x = 75;
     }
     else if (inputString1[0] == '3')
     {
@@ -199,12 +126,12 @@ void command_motors(String inputString1){
       }
       else
       {
-        move_forward(x);
+        move_N(x);
       }
     }
     else if (inputString1[1] == 'e')
     {
-      move_right(x);
+      move_E(x);
     }
     else if (inputString1[1] == 's')
     {
@@ -218,13 +145,13 @@ void command_motors(String inputString1){
       }
       else
       {
-        move_backward(x);
+        move_S(x);
       }    
     }
     
     else if (inputString1[1] == 'w')
     {
-      move_left(x);
+      move_W(x);
     }
 
     else if (inputString1[1] == 'c'){
@@ -239,6 +166,48 @@ void command_motors(String inputString1){
     {
       stop_motors();
     }
+    if (inputString1[0] == '1')
+    {
+      delay(75);
+      stop_motors();
+      delay(1000);
+    }
+}
+
+void motor()
+{
+  /* Servo Motor commanded to fully extend
+   * While extending the deriviative of the voltage through the motor is measured
+   * The voltage measuremtns are averaged to make a smoother curve
+   * The voltage spikes when an ostacle is hit
+   * When the voltage spikes the motor stops moving
+   */
+  base.write(180); //motor commanded to fully extend 
+  float average = 0;//initialize current average voltage value
+  float aver_prev = 350; //initialize previous value used to find dervitive
+  float derive_av = 0; //initialize derivitive value
+  delay(100);//timing to allign servo motor angle with code predicted value 
+  for (int cur=1; cur<180; cur = cur +2) //cur is predicted servo angle
+  {
+    average = 0;//reinitalize current average
+    //this for statement reads the voltage several times and averages it
+    for (int i=1;i<100;i++)
+    {
+        volt = analogRead(analogPin);
+        average = average+volt;
+    }
+    delay(2); // this alligns the loop time with the servo motion
+    average = average/9.0;//technically should divide by 99, but 9 makes a times ten gain for aproximately a ten times gain
+    derive_av = average-aver_prev;
+    aver_prev = average;
+    //Serial.println(derive_av);
+    if (derive_av >70 &&cur>20)
+    {
+      base.write(0);//stop at current predicted value
+      cur = 180; // exit loop because condition is met
+    }
+  }
+  base.write(0);
 }
 
 void serialEvent1() {
@@ -266,3 +235,6 @@ void serialEvent1() {
     }
   }
 }
+
+
+
