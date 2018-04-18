@@ -93,11 +93,11 @@ void command_motors(String inputString1){
         }
     }
 
-    else if (inputString1[0] == '1'){
-      motor_speed=75;
+    else if (inputString1[0] == '1' || inputString1[0] == '0'){
+      motor_speed=50;
     }
     else if (inputString1[0] == '2'){
-      motor_speed = 75;
+      motor_speed = 100;
     }
     else if (inputString1[0] == '3'){
       motor_speed = 255;
@@ -147,16 +147,16 @@ void command_motors(String inputString1){
     else{
       stop_motors();
     }
-    if (inputString1[0] == '1'){
-      delay(75);
-      stop_motors();
-      delay(1000);
-    }
-    else if (inputString1[0] == '2'){
-      delay(400);
-      stop_motors();
-      delay(750);
-    }
+//    if (inputString1[0] == '1'){
+//      delay(125);
+//      stop_motors();
+//      delay(1000);
+//    }
+//    else if (inputString1[0] == '0'){
+//      delay(50);
+//      stop_motors();
+//      delay(3000);
+//    }
 }
 
 void stamp(){
