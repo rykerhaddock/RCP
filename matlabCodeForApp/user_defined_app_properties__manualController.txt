@@ -1,0 +1,27 @@
+% Each row not a comment should have 4 parameters seperated by comments
+% These rows provide user defined settings for the action buttons on the manual controller
+% PARAMETERS 1-4
+%   parameter 1:  isEnabled, 1 - enable button, 0 - disable button.
+%   parameter 2:  startStopped, 1 - action only from stopped position, 0 - action allowed while in motion
+%   parameter 3:  buttonLabel, this is the name you want for the button
+%   parameter 4:  buttonCommand, this is the command that will be sent when the button is pressed
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% parameters for ACTION1 button on manual controller
+1, 1, DEMO 1, d1
+
+% parameters for ACTION2 button on manual controller
+1, 1, DEMO 2, d2
+
+% parameters for ACTION3 button on manual controller
+0, 1, ACTION 3, NA
+
+% parameters for ACTION4 button on manual controller
+0, 1, ACTION 4, NA
+
+
+

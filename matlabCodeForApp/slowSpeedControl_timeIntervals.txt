@@ -1,0 +1,13 @@
+% This document contains two values that the user will be able to change to 
+%   allow for better control of the movement of the robot near the final destination.
+%
+% Value 1 - number of seconds the robot will move before pausing.
+% Value 2 - number of seconds the robot will stay paused before starting again.
+
+.08, .8,
+
+% Value 3 - delay at destination before marking (added verification)
+2,
+
+% Value 4 - speed level used when robots movement is done in pulses
+1
